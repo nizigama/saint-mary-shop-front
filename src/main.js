@@ -16,7 +16,8 @@ const toast = swal.mixin({
     toast: true,
     position: "top-end",
     showConfirmButton: false,
-    timer: 8000,
+    timerProgressBar: true,
+    timer: 3000,
 });
 
 window.axios = axios;
