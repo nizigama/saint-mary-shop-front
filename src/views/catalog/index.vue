@@ -6,6 +6,8 @@
       <router-link v-if="!isAuthenticated()" :to="{ name: 'Login' }" class="button">Login</router-link>
       &nbsp;
       <button v-if="isAuthenticated()" @click.prevent="logout" class="button">Logout</button>
+      &nbsp;
+      <router-link v-if="isAuthenticated()" :to="{ name: 'Cart' }" class="button">Cart</router-link>
     </div>
     <br />
     <h2 class="label">🎁 Products</h2>
