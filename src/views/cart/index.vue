@@ -1,6 +1,9 @@
 <template>
     <div id="cart" class="container">
-        <h2 class="label">🛒 Cart <span class="tag is-black is-circle">3</span></h2>
+        <div style="float: right">
+            <router-link :to="{ name: 'Home' }" class="button">Catalog</router-link>
+        </div>
+        <h2 class="label">🛒 Cart <span class="tag is-black is-circle">{{ items.length }}</span></h2>
 
         <table class="table">
             <thead>
@@ -12,54 +15,106 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
+                <tr v-for="(item, k) in items">
                     <td>
-                        <button class="button is-small" title="Remove">🗑️</button>
+                        <button :disabled="deletingItemID === item.cartItemID" @click.prevent="removeFromCart(item.cartItemID)" class="button is-small"
+                            title="Remove">🗑️</button>
                     </td>
-                    <td>Product I</td>
-                    <td>x 2</td>
-                    <td>€8.40</td>
+                    <td>{{ item.productName }}</td>
+                    <td>x {{ item.quantity }}</td>
+                    <td>€{{ item.amount.toLocaleString() }}</td>
                 </tr>
-
-                <tr>
-                    <td>
-                        <button class="button is-small" title="Remo`ve">🗑️</button>
-                    </td>
-                    <td>Product II</td>
-                    <td>x 1</td>
-                    <td>€9.60</td>
-                </tr>
-
-                <tr>
-                    <td></td>
-                    <td>Tax</td>
-                    <td>19%</td>
-                    <td>€3.42</td>
-                </tr>
-
                 <tr>
                     <td></td>
                     <td></td>
                     <td></td>
                     <td>
-                        <b>€21.42</b>
+                        <b>€{{ totalCart.toLocaleString() }}</b>
                     </td>
                 </tr>
             </tbody>
         </table>
 
-        <div title="Show this if logged in">Hey {{ email }} 👋</div>
-        <button class="button is-black">Checkout</button>
+        <div title="Show this if logged in">Hey 👋</div>
+        <button @click.prevent="checkout" class="button is-black">Checkout</button>
         <div>and never pay!</div>
     </div>
 </template>
 
 <script>
+
+import { axiosErrorHandlingMixin } from '../../mixins/axiosErrorHandling'
+import { authCheck } from '../../mixins/authentication'
+
 export default {
-    data(){
+    data() {
         return {
-            email: "user@email.com"
+            items: [],
+            deletingItemID: null
         }
+    },
+    computed: {
+        totalCart() {
+            return this.items.reduce((total, current) => {
+                return total + parseFloat(current.amount)
+            }, 0)
+        }
+    },
+    mixins: [authCheck, axiosErrorHandlingMixin],
+    methods: {
+        async fetchCartItems() {
+            try {
+                const response = await axios.get("/cart", {
+                    headers: {
+                        'Authorization': `Bearer ${this.getToken()}`
+                    }
+                })
+
+                this.items = response.data
+            } catch (error) {
+                this.items = []
+                this.handleAxiosNetworkError(error)
+            }
+        },
+        async removeFromCart(itemID) {
+            const result = await swal.fire({
+                title: 'Remove item from cart?',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes',
+            })
+
+            if (!result.value) {
+                return
+            }
+
+            this.deletingItemID = itemID
+
+            try {
+                await axios.delete("/cart/" + itemID, {
+                    headers: {
+                        'Authorization': `Bearer ${this.getToken()}`
+                    }
+                })
+
+                toast.fire("Info", "Successfully removed from cart", "success");
+                const index = this.items.findIndex(v => v.cartItemID == itemID)
+
+                this.items.splice(index, 1)
+
+            } catch (error) {
+                this.handleAxiosNetworkError(error)
+            }
+            this.deletingItemID = null
+        },
+
+        checkout() {
+            toast.fire("Info", "Successfully checked out😜", "success");
+        }
+    },
+    mounted() {
+        this.fetchCartItems()
     }
 }
 </script>
