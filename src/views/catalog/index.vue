@@ -1,57 +1,55 @@
 <template>
-  <div class="px-6">
+  <div class="px-6" :key="componentKey">
     <div style="float: right">
-      <button type="submit" class="button is-black">Register</button>
+      <router-link v-if="!isAuthenticated()" :to="{ name: 'Register' }" class="button">Register</router-link>
       &nbsp;
-      <button type="submit" class="button">Login</button>
+      <router-link v-if="!isAuthenticated()" :to="{ name: 'Login' }" class="button">Login</router-link>
       &nbsp;
-      <button type="submit" class="button">Logout</button>
+      <button v-if="isAuthenticated()" @click.prevent="logout" class="button">Logout</button>
     </div>
-    <br/>
+    <br />
     <h2 class="label">🎁 Products</h2>
     <div id="products" class="columns p-4">
 
-      <Product v-for="(px, k) in products" :details="px" :key="k" />
+      <Product v-for="(px, k) in products" :details="px" :key="k" :authenticated="isAuthenticated()" />
     </div>
   </div>
 </template>
 
 <script>
+import axios from "axios"
 import Product from "../../components/catalog/Product.vue"
+import { authCheck } from '../../mixins/authentication'
+import { axiosErrorHandlingMixin } from '../../mixins/axiosErrorHandling'
 export default {
   components: {
     Product
   },
+  mixins: [authCheck, axiosErrorHandlingMixin],
   data() {
     return {
-      products: [
-        {
-          name: "Product 1",
-          imageLink: "https://via.placeholder.com/150",
-          price: 500
-        },
-        {
-          name: "Product 2",
-          imageLink: "https://via.placeholder.com/150",
-          price: 820
-        },
-        {
-          name: "Product 2",
-          imageLink: "https://via.placeholder.com/150",
-          price: 820
-        },
-        {
-          name: "Product 2",
-          imageLink: "https://via.placeholder.com/150",
-          price: 820
-        },
-        {
-          name: "Product 2",
-          imageLink: "https://via.placeholder.com/150",
-          price: 820
-        },
-      ]
+      componentKey: 0,
+      products: []
     }
+  },
+  methods: {
+    async fetchProducts(){
+      try {
+        const response = await axios.get("/catalog/list")
+
+        this.products = response.data
+      } catch (error) {
+        this.products = []
+        this.handleAxiosNetworkError(error)
+      }
+    },
+    logout() {
+      localStorage.removeItem("auth_token");
+      this.componentKey++
+    }
+  },
+  mounted(){
+    this.fetchProducts()
   }
 }
 </script>
