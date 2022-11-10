@@ -16,11 +16,17 @@ const router = createRouter({
       path: "/login",
       name: "Login",
       component: Login,
+      meta: {
+        hideWhenLoggedIn: true,
+      },
     },
     {
       path: "/register",
       name: "Register",
       component: Register,
+      meta: {
+        hideWhenLoggedIn: true,
+      },
     },
     {
       path: "/cart",
@@ -31,6 +37,18 @@ const router = createRouter({
       },
     },
   ],
+});
+
+router.beforeEach((to, from) => {
+  const token = localStorage.getItem("auth_token");
+
+  if (to.meta.hideWhenLoggedIn && token !== null) {
+    return { name: "Home" };
+  }
+
+  if (to.meta.requiresAuth && token === null) {
+    return { name: "Login" };
+  }
 });
 
 export default router;

@@ -57,15 +57,6 @@ export default {
         }
     },
     mixins: [axiosErrorHandlingMixin, authCheck],
-    beforeRouteEnter(to, from, next) {
-        const token = localStorage.getItem("auth_token")
-
-        if (token !== null) {
-            next(vm => vm.$router.push({ name: 'Home' }))
-            return
-        }
-        next()
-    },
 }
 </script>
 
