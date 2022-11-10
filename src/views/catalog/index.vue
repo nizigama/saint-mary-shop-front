@@ -13,7 +13,7 @@
     <h2 class="label">🎁 Products</h2>
     <div id="products" class="columns p-4">
 
-      <Product v-for="(px, k) in products" :details="px" :key="k" :authenticated="isAuthenticated()" />
+      <Product v-for="(px, k) in products" :details="px" :key="k" />
     </div>
   </div>
 </template>
