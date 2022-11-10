@@ -67,7 +67,7 @@ export default {
 
                 toast.fire("Info", "Registration successful", "success");
 
-                this.$router.push({ name: 'home' })
+                this.$router.push({ name: 'Home' })
             } catch (error) {
                 this.registering = false
                 this.handleAxiosNetworkError(error)
